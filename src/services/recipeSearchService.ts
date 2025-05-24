@@ -273,7 +273,7 @@ import { toast } from "sonner";
 const RECIPES_COLLECTION = "recipes";
 
 const CORS_PROXY = "https://api.allorigins.win/raw?url=";
-const SPOONACULAR_API_KEY = "YOUR_SPOONACULAR_KEY";
+const SPOONACULAR_API_KEY = "505771b0111045f0b7b8493b3989b582";
 
 async function fetchWithProxy(url: string): Promise<Response> {
   try {
@@ -444,45 +444,7 @@ export async function searchRecipeOnline(query: string): Promise<Recipe | null> 
     return null;
   }
 
-  // 1. Edamam API
-  try {
-    const edamamUrl = `https://api.edamam.com/api/recipes/v2?type=public&q=${encodeURIComponent(
-      query
-    )}&app_id=YOUR_EDAMAM_APP_ID&app_key=YOUR_EDAMAM_APP_KEY`;
-    const response = await fetchWithProxy(edamamUrl);
-    if (response.ok) {
-      const data = await response.json();
-      if (data.hits && data.hits.length > 0) {
-        const rec = data.hits[0].recipe;
-        const localId = `edamam-${rec.uri.split("#")[1]}`;
-
-        if (await recipeExistsInFirebase(localId)) {
-          toast.info("Recipe already saved");
-          const allRecipes = await loadRecipesFromFirebase();
-          return allRecipes.find((r) => r.id === localId) || null;
-        }
-
-        const recipe: Recipe = {
-          id: localId,
-          name: rec.label,
-          description: rec.label + " recipe from Edamam",
-          image: rec.image,
-          cookTime: rec.totalTime || 30,
-          difficulty: estimateDifficulty(rec.ingredientLines.length),
-          servings: rec.yield || 2,
-          ingredients: rec.ingredientLines,
-          steps: ["Instructions not available."],
-        };
-        const firebaseId = await saveRecipeToFirebase(recipe);
-        if (firebaseId) recipe.firebaseId = firebaseId;
-        return recipe;
-      }
-    }
-  } catch (e) {
-    console.error("Edamam fetch failed:", e);
-  }
-
-  // 2. TheMealDB API
+  // 1. TheMealDB API
   try {
     const mealUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
     const response = await fetchWithProxy(mealUrl);
@@ -532,7 +494,7 @@ export async function searchRecipeOnline(query: string): Promise<Recipe | null> 
     console.error("TheMealDB fetch failed:", e);
   }
 
-  // 3. Spoonacular API
+  // 2. Spoonacular API
   try {
     const spoonacularUrl = `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(
       query
@@ -584,7 +546,7 @@ export async function searchRecipeOnline(query: string): Promise<Recipe | null> 
     console.error("Spoonacular fetch failed:", e);
   }
 
-  // 4. TheCocktailDB API
+  // 3. TheCocktailDB API
   try {
     const cocktailUrl = `https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
     const response = await fetchWithProxy(cocktailUrl);
