@@ -1,7 +1,14 @@
 {
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
   "headers": [
     {
-      "source": "/whisper-recipe/assets/(.*).js",
+      "source": "/assets/(.*).js",
       "headers": [
         {
           "key": "Content-Type",
@@ -11,3 +18,4 @@
     }
   ]
 }
+
