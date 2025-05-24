@@ -6,6 +6,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/whisperRecipe/' : '/',
   server: {
     host: "::",
     port: 8000,  // Setting port to 8000 as specified in the requirements
