@@ -1,22 +1,21 @@
-// Import the functions you need from the SDKs you need
 import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage"; // Add this import
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBe95t7dM7P9ISh3gca2UsgKmC5NyrfMXU",
+  apiKey: "YOUR_API_KEY",
   authDomain: "recipe-68bf6.firebaseapp.com",
   projectId: "recipe-68bf6",
-  storageBucket: "recipe-68bf6.appspot.com", // ✅ Fixed .app -> .com
+  storageBucket: "recipe-68bf6.appspot.com",
   messagingSenderId: "259943453914",
   appId: "1:259943453914:web:7ed5226737d2136b7081e3",
   measurementId: "G-ELF3TT6404"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db = getFirestore(app); // ✅ Added Firestore instance
+const db = getFirestore(app);
+const storage = getStorage(app); // Initialize storage
 
-export { analytics, db };
+export { analytics, db, storage };
