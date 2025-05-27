@@ -267,25 +267,34 @@ export const deleteRecipeFromCollection = async (recipeId: string, firebaseId?: 
 import { sampleRecipes } from "@/data/sampleRecipes";
 import { db } from "@/firebase/config";
 import { Recipe } from "@/types/Recipe";
-import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { generateRecipeWithGemini } from "./geminiService";
+import { fetchRecipeImage } from "./unsplashService";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { toast } from "sonner";
 
 const RECIPES_COLLECTION = "recipes";
-
 const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 const SPOONACULAR_API_KEY = "505771b0111045f0b7b8493b3989b582";
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 async function fetchWithProxy(url: string): Promise<Response> {
   try {
     return await fetch(url);
   } catch {
-    // fallback with CORS proxy if direct fetch fails
     return await fetch(CORS_PROXY + encodeURIComponent(url));
   }
 }
 
 async function recipeExistsInFirebase(localId: string): Promise<boolean> {
-  const q = query(collection(db, "recipes"), where("id", "==", localId));
+  const q = query(collection(db, RECIPES_COLLECTION), where("id", "==", localId));
   const snapshot = await getDocs(q);
   return !snapshot.empty;
 }
@@ -410,8 +419,8 @@ export async function saveRecipeToFirebase(recipe: Recipe): Promise<string | nul
 }
 
 function estimateDifficulty(ingredientsCount: number): "Easy" | "Medium" | "Hard" {
-  if (ingredientsCount <= 5) return "Easy";
-  if (ingredientsCount <= 10) return "Medium";
+  if (ingredientsCount <= 10) return "Easy";
+  if (ingredientsCount <= 30) return "Medium";
   return "Hard";
 }
 
@@ -495,7 +504,7 @@ export async function searchRecipeOnline(query: string): Promise<Recipe | null> 
   }
 
   // 2. Spoonacular API
-  try {
+  /*try {
     const spoonacularUrl = `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(
       query
     )}&addRecipeInformation=true&number=1&apiKey=${SPOONACULAR_API_KEY}`;
@@ -544,7 +553,7 @@ export async function searchRecipeOnline(query: string): Promise<Recipe | null> 
     }
   } catch (e) {
     console.error("Spoonacular fetch failed:", e);
-  }
+  }*/
 
   // 3. TheCocktailDB API
   try {
@@ -587,6 +596,28 @@ export async function searchRecipeOnline(query: string): Promise<Recipe | null> 
   } catch (e) {
     console.error("TheCocktailDB fetch failed:", e);
   }
+
+  try {
+  const recipeData = await generateRecipeWithGemini(query);
+  const imageUrl = await fetchRecipeImage(query);
+
+  const recipe: Recipe = {
+    id: crypto.randomUUID(),
+    name: recipeData.name,
+    description: recipeData.description,
+    ingredients: recipeData.ingredients,
+    steps: recipeData.instructions, // ✅ Map 'instructions' to 'steps'
+    cookTime: recipeData.cookTime,
+    difficulty: recipeData.difficulty,
+    servings: recipeData.servings,
+    image: imageUrl || ""
+  };
+
+  return recipe;
+} catch (error) {
+  console.error("Online recipe search failed:", error);
+  return null;
+}
 
   toast.error("No recipes found online for your query.");
   return null;
