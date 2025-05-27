@@ -267,8 +267,6 @@ export const deleteRecipeFromCollection = async (recipeId: string, firebaseId?: 
 import { sampleRecipes } from "@/data/sampleRecipes";
 import { db } from "@/firebase/config";
 import { Recipe } from "@/types/Recipe";
-import { generateRecipeWithGemini } from "./geminiService";
-import { fetchRecipeImage } from "./unsplashService";
 import {
   addDoc,
   collection,
@@ -279,11 +277,13 @@ import {
   where,
 } from "firebase/firestore";
 import { toast } from "sonner";
+import { generateRecipeWithGemini } from "./geminiService";
+import { fetchRecipeImage } from "./unsplashService";
 
 const RECIPES_COLLECTION = "recipes";
 const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 const SPOONACULAR_API_KEY = "505771b0111045f0b7b8493b3989b582";
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+//const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 async function fetchWithProxy(url: string): Promise<Response> {
   try {
