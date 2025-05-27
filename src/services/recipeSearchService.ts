@@ -283,7 +283,6 @@ import { fetchRecipeImage } from "./unsplashService";
 const RECIPES_COLLECTION = "recipes";
 const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 const SPOONACULAR_API_KEY = "505771b0111045f0b7b8493b3989b582";
-//const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 async function fetchWithProxy(url: string): Promise<Response> {
   try {
